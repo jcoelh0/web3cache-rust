@@ -1,0 +1,64 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0",
+        import: ["@key"])
+  
+
+  """
+  Represents an error in the input of a mutation.
+  """
+  interface DisplayableError {
+    """
+    The path to the input field that caused the error.
+    """
+    field: [String!]
+    """
+    The error message.
+    """
+    message: String!
+  }
+
+  """
+  Represents an error in the input of a mutation.
+  """
+  type UserError implements DisplayableError {
+    """
+    The path to the input field that caused the error.
+    """
+    field: [String!]
+    """
+    The error message.
+    """
+    message: String!
+  }
+
+  input ContractRegistrationInput {
+    contract_id: String!
+    chain: String!
+    contract_address: String!
+    contract_abi: String
+    events: String
+  }
+
+  input ContractInvalidationInput {
+    contract_id: String!
+  }
+
+  type ContractRegistrationResult {
+    result: String!
+  }
+
+  type contractPayload {
+    """
+    
+    """
+    result: String
+    """
+    The list of errors that occurred from executing the mutation.
+    """
+    userErrors: [UserError!]!
+  }
+
+  type Mutation { 
+    contractRegistration(input: ContractRegistrationInput!): ContractRegistrationResult
+    contractInvalidation(input: ContractInvalidationInput!): ContractRegistrationResult
+  }

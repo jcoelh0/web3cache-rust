@@ -1,0 +1,10 @@
+{
+    "PORT": "PORT",
+    "frontend": "frontend",
+    "iam": "iam",
+    "demo": "demo",
+    "RECEIVERPORT" : "RECEIVERPORT",
+    "READURL": "READURL",
+    "REALTIME_URL": "REALTIME_URL",
+    "DB_CONN_STRING":"DB_CONN_STRING"
+}

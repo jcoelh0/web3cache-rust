@@ -1,0 +1,5 @@
+{
+    "PORT": "4000",
+    "READ_URL": "https://stage.tangerinemeteor.org/web3cache/read",
+    "SUBSCRIPTION_URL": "https://stage.tangerinemeteor.org/web3cache/events"
+}

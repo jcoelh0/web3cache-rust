@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3cache-ipfs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cacheipfs
+  template:
+    metadata:
+      labels:
+        component: web3cacheipfs
+    spec:
+      volumes:
+        - name: ipfs-storage
+          persistentVolumeClaim:
+            claimName: web3cacheipfs-persistent-volume-claim
+      containers:
+        - name: web3cacheipfs-client
+          image: ghcr.io/mintstatelabs/web3cache-ipfs:0.1
+          env:
+            - name: PORT
+              value: "3100"
+            - name: RUST_LOG
+              value: "info"
+          ports:
+            - containerPort: 3100
+
+          volumeMounts:
+            - name: ipfs-storage
+              mountPath: /app/static
+
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

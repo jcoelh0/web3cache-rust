@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: web3cache
+  name: web3cache-read-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:096407655945:certificate/1bcbd1e7-cdc9-46c5-93d5-32941611bf5c
+    alb.ingress.kubernetes.io/group.name: "web3cache-stage"
+    alb.ingress.kubernetes.io/group.order: "2"
+spec:
+  ingressClassName: alb
+  rules:
+    - host: web3cache.tangerinemeteor.org
+      http:
+        paths:
+          - path: /web3cache/read/
+            pathType: Prefix
+            backend:
+              service:
+                name: web3cacheread-service
+                port:
+                  number: 443

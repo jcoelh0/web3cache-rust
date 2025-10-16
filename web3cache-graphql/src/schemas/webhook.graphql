@@ -1,0 +1,285 @@
+extend schema
+    @link(
+      url: "https://specs.apollo.dev/federation/v2.0"
+      import: ["@key", "@shareable"]
+    )
+  """
+  An ISO-8601 encoded UTC date and time string.
+  """
+  scalar DateTime
+
+  """
+  Represents an RFC 3986 and
+  RFC 3987-compliant URI string.
+
+  For example, "https://test.mywebsite.com" is a valid URL. It includes a scheme (https) and a host
+  """
+  scalar URL
+
+  """
+  A contract event which is a String that represents an event contained in contract ABIs.
+  """
+  scalar ContractEvent
+
+  """
+  An interface for standard IDs. This is standard naming for this type of interface in Graphql
+  """
+  interface Node {
+    """
+    A globally-unique identifier.
+    """
+    id: ID!
+  }
+
+  """
+  Represents an error in the input of a mutation.
+  """
+  interface DisplayableError {
+    """
+    The path to the input field that caused the error.
+    """
+    field: [String!]
+    """
+    The error message.
+    """
+    message: String!
+  }
+
+  """
+  Represents an error in the input of a mutation.
+  """
+  type UserError implements DisplayableError {
+    """
+    The path to the input field that caused the error.
+    """
+    field: [String!]
+    """
+    The error message.
+    """
+    message: String!
+  }
+
+  """
+  An HTTPS endpoint to which webhook subscriptions send POST requests.
+  """
+  type WebhookHttpEndpoint {
+    """
+    The URL to which the webhooks events are sent.
+    """
+    callbackUrl: URL!
+  }
+
+  """
+  The supported formats for webhook subscriptions.
+  """
+  enum WebhookSubscriptionFormat {
+    JSON
+  }
+
+  """
+  An endpoint to which webhook subscriptions send webhooks events.
+  """
+  union WebhookSubscriptionEndpoint = WebhookHttpEndpoint
+
+  """
+  An interface for webhook subscription.
+  It describes the contract event that the applications wants to receive, and a destination where SpellBook should
+  send webhooks of the specified topic. When an event for a given topic occurs, the webhook subscription sends a
+  relevant payload to the destination.
+  """
+  interface WebhookSubscription implements Node {
+    """
+    The date and time when the webhook subscription was created.
+    """
+    createdAt: DateTime!
+    """
+    The endpoint to which the webhook subscription will send events.
+    """
+    endpoint: WebhookSubscriptionEndpoint!
+    """
+    The format in which the webhook subscription should send the data.
+    """
+    format: WebhookSubscriptionFormat!
+    """
+    A globally-unique identifier.
+    """
+    id: ID!
+    """
+    The date and time when the webhook subscription was updated.
+    """
+    updatedAt: DateTime!
+  }
+
+  """
+  A webhook subscription for an EVM contract.
+  It describes the contract event that the applications wants to receive, and a destination where SpellBook should send
+  webhooks of the specified topic. When an event for a given topic occurs, the webhook subscription sends a relevant
+  payload to the destination.
+  """
+  type WebhookEVMSubscription implements Node & WebhookSubscription {
+    """
+    The date and time when the webhook subscription was created.
+    """
+    createdAt: DateTime!
+    """
+    The ID of the Contract registration associated with the webhook subscription.
+    """
+    contractId: ID!
+    """
+    The endpoint to which the webhook subscription will send events.
+    """
+    endpoint: WebhookSubscriptionEndpoint!
+    """
+    The format in which the webhook subscription should send the data.
+    """
+    format: WebhookSubscriptionFormat!
+    """
+    A globally-unique identifier.
+    """
+    id: ID!
+    """
+    The type of contract events that triggers the webhook. The contract events determines when the webhook
+    subscription sends a webhook, as well as what class of data object that webhook contains.
+    """
+    includedEvents: [ContractEvent!]
+    """
+    The date and time when the webhook subscription was updated.
+    """
+    updatedAt: DateTime!
+  }
+
+  type WebhookEVMReplayInfo implements Node {
+    """
+    The ID of the Contract registration associated with the webhook subscription.
+    """
+    contractId: ID!
+    """
+    A globally-unique identifier.
+    """
+    id: ID!
+    """
+    The date and time when the webhook subscription was updated.
+    """
+    updatedAt: DateTime!
+    """
+    Amount of transaction blocks to be replayed
+    """
+    amount: Int!
+  }
+
+  type Query {
+    """
+    Returns a webhook subscription to an EVM Contract by ID.
+    """
+    webhookEVMSubscription(
+      "The ID of the WebhookEVMSubscription to return."
+      id: ID!
+    ): WebhookEVMSubscription
+    """
+    Returns a list of EVM Contract webhook subscriptions.
+    """
+    webhookEVMSubscriptions: [WebhookEVMSubscription!]!
+  }
+
+  type Mutation {
+    """
+    Creates a new webhook subscription to an EVM contract.
+    """
+    webhookEVMSubscriptionCreate(
+      """
+      The ID of the contract registration to listen to for events.
+      """
+      contractRegistrationId: ID!
+      "Specifies the input fields for a webhook subscription."
+      webhookSubscription: WebhookEVMSubscriptionCreateInput!
+    ): WebhookEVMSubscriptionCreatePayload
+    """
+    Replays a webhook subscription to an EVM contract at a specific point
+    """
+    webhookEVMSubscriptionReplay(
+      "The ID of the webhook subscription to update."
+      id: ID!
+      "Specifies the input fields for a webhook subscription."
+      webhookSubscription: WebhookEVMSubscriptionReplayInput!
+    ): WebhookEVMSubscriptionReplayPayload
+    """
+    Deletes a webhook subscription.
+    """
+    webhookSubscriptionDelete(
+      "The ID of the webhook subscription to delete."
+      id: ID!
+    ): WebhookSubscriptionDeletePayload
+
+  }
+
+  """
+  Specifies the input fields for the creation of a webhook subscription to an EVM contract.
+  """
+  input WebhookEVMSubscriptionCreateInput {
+    """
+    URL where the webhook subscription should send the POST request when the event occurs.
+    """
+    callbackUrl: URL
+    """
+    The format in which the webhook subscription should send the data.
+    """
+    format: WebhookSubscriptionFormat = JSON
+    """
+    The list of contract events to be included in the webhook subscription. If null then all events will be listened
+    to
+    """
+    includeEvents: [ContractEvent!]
+  }
+
+  """
+  Specifies the input fields for a webhook subscription to an EVM contract.
+  """
+  input WebhookEVMSubscriptionReplayInput {
+    """
+    The block number (inclusive) to replay events from. Input must be non-negative. If it's greater than the current
+    block number, it will start at the current block number.
+    """
+    blockNumber: Int!
+  }
+
+  """
+  Return type for WebhookEVMSubscriptionCreate mutation.
+  """
+  type WebhookEVMSubscriptionCreatePayload {
+    """
+    The list of errors that occurred from executing the mutation.
+    """
+    userErrors: [UserError!]!
+    """
+    The webhook contract event subscription that was created.
+    """
+    webhookContractEventSubscription: WebhookEVMSubscription
+  }
+
+  """
+  Return type for WebhookEVMSubscriptionReplay mutation.
+  """
+  type WebhookEVMSubscriptionReplayPayload {
+    """
+    The list of errors that occurred from executing the mutation.
+    """
+    userErrors: [UserError!]!
+    """
+    The webhook contract event subscription that was updated.
+    """
+    webhookContractEventSubscription: WebhookEVMSubscription
+  }
+
+  """
+  Return type for webhookSubscriptionDelete mutation. Can be used for
+  """
+  type WebhookSubscriptionDeletePayload {
+    """
+    The ID of the deleted webhook subscription.
+    """
+    deletedWebhookSubscriptionId: ID
+    """
+    The list of errors that occurred from executing the mutation.
+    """
+    userErrors: [UserError!]!
+  }

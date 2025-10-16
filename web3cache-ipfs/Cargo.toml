@@ -1,0 +1,27 @@
+[package]
+name = "ipfs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-files = "0.6.1"
+actix-http = "3.1.0"
+actix-service = "2.0.2"
+actix-web = "4.1.0"
+axum = "0.2.6"
+base64 = "0.13.0"
+bytes = "1.1.0"
+derive_more = "0.99.17"
+dotenv = "0.15.0"
+env_logger = "0.9.0"
+http = "0.2.8"
+log = "0.4.17"
+mime_guess = "2.0.4"
+reqwest = "0.11.11"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.19.2", features = ["full", "io-util"] }
+tokio-stream = "0.1.9"
+tokio-util = { version = "0.7.3", features = ["full"] }
+tree_magic = "0.2.3"

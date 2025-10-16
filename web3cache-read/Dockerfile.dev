@@ -1,0 +1,13 @@
+FROM rust
+
+WORKDIR /app
+
+COPY web3cache/ web3cache/
+COPY .env .env
+COPY Cargo.toml Cargo.toml
+COPY my-workspace-hack/ my-workspace-hack/ 
+
+RUN cargo build --package web3cache
+
+EXPOSE 3000
+CMD ["cargo","run","--package","web3cache"]

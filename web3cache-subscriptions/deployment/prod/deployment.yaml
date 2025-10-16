@@ -1,0 +1,63 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: web3cache
+  name: web3cache-subscriptions
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cache-subscriptions
+  template:
+    metadata:
+      labels:
+        component: web3cache-subscriptions
+    spec:
+      containers:
+        - name: web3cache-subscriptions-client
+          image: ghcr.io/orangecomet/web3cache-subscriptions:prod
+          imagePullPolicy: Always
+          env:
+            - name: SUBSCRIPTION_PORT
+              value: "3000"
+            - name: iam
+              value: "https://web3cache.mintstatelabs.org/iam"
+            - name: frontend
+              value: "web3cache.playtest.link"
+            - name: READURL
+              value: "http://web3cacheread-service:443/web3cache/read"
+            - name: CONTROLLERURL
+              value: "http://web3cache-controller-service:5100/web3cache/controller"
+            - name: RUST_LOG
+              value: "info"
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: events-secrets
+                  key: MONGOURI
+            - name: READAPIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: events-secrets
+                  key: READAPIKEY
+          ports:
+            - containerPort: 3000
+              name: https
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 10m
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "web3cache-subscriptions"
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

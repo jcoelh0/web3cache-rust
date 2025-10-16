@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3cache-read
+  namespace: web3cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cacheread
+  template:
+    metadata:
+      labels:
+        component: web3cacheread
+    spec:
+      containers:
+        - name: web3cacheread-client
+          image: ghcr.io/orangecomet/web3cache-read:prod
+          imagePullPolicy: Always
+          env:
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: read-secrets
+                  key: MONGOURI
+            - name: RUST_LOG
+              value: "info"
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 20m
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "web3cache-read"
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

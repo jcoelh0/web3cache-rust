@@ -1,0 +1,7 @@
+{
+    "internal_port": "internal_port",
+    "external_port": "external_port",
+    "frontend": "frontend",
+    "iam": "iam",
+    "demo": "demo"
+}

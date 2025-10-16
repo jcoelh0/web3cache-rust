@@ -1,0 +1,102 @@
+name: Docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    branches: ["dev"]
+    # Publish semver tags as releases.
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: ["dev"]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+  TEST_TAG: ghcr.io/mintstatelabs/${{ github.event.repository.name }}:test
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      #- name: Build and push Docker image
+      #  id: build-and-load
+      #  uses: docker/build-push-action@v3
+      #  with:
+      #    context: .
+      #    load: true
+      #    tags: ${{ env.TEST_TAG }}
+      #
+      #- name: Test docker image
+      #  run: |
+      #    docker run -e MONGOURI=${{ secrets.MONGO_TEST_URI }} --rm  ${{ env.TEST_TAG }} cargo test --release
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@master
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: us-east-1
+#      - name: Login to Amazon ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v1
+#      - name: Deploy to Kubernetes cluster
+#        uses: kodermax/kubectl-aws-eks@master
+#        env:
+#          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+#        with:
+#          args: rollout restart deployment/${{ github.event.repository.name }} -n web3cache
+#
+#      - name: verify deployment
+#        uses: kodermax/kubectl-aws-eks@master
+#        env:
+#          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+#        with:
+#          args: rollout status deployment/${{ github.event.repository.name }} -n web3cache
+ 

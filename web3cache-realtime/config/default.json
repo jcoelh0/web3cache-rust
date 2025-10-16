@@ -1,0 +1,7 @@
+{
+    "internal_port": "4100",
+    "external_port": "4101",
+    "iam": "http://localhost:3500/iam",
+    "frontend": "http://localhost/",
+    "demo": true
+}

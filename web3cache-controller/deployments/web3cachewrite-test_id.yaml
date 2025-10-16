@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3cache-write-kodi-testnet
+  namespace: web3cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cache-write
+  template:
+    metadata:
+      labels:
+        component: web3cache-write
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: web3cache-write
+          image: ghcr.io/mintstatelabs/web3cache-write:dev
+          imagePullPolicy: Always
+          env:
+            - name: CONTRACTID
+              value: "test_id"
+            - name: SUBSCRIPTIONS_URL
+              value: "http://web3cache-subscriptions-service:443/web3cache/events"
+            - name: DISPATCHER_URL
+              value: "http://web3cache-dispatcher-service:3003/push-transactions"
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: web3cachewrite
+                  key: MONGOURI
+            - name: RUST_LOG
+              value: "info"
+            - name: RESETDB
+              value: "once"
+            - name: WAIT_SECONDS
+              value: "10"
+
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 50m
+            limits:
+              memory: 500Mi
+
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

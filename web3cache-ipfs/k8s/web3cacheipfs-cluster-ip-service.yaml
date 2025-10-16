@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web3cacheipfs-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: web3cacheipfs
+  ports:
+    - port: 3100
+      targetPort: 3100

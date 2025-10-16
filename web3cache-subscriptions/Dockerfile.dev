@@ -1,0 +1,19 @@
+FROM rust
+RUN rustup default stable
+WORKDIR /app
+
+ENV CARGO_MANIFEST_DIR=/app/web3cache
+COPY dummy.rs web3cache/dummy.rs
+COPY web3cache/Cargo.toml web3cache/Cargo.toml
+COPY web3cache/files/ web3cache/files/
+
+COPY my-workspace-hack/ my-workspace-hack/
+COPY Cargo.toml Cargo.toml 
+RUN sed -i 's#src/main.rs#dummy.rs#' web3cache/Cargo.toml
+RUN cargo build --package web3cache --release
+RUN sed -i 's#dummy.rs#src/main.rs#' web3cache/Cargo.toml
+COPY web3cache/src/ web3cache/src/
+RUN cargo build --package web3cache --release
+
+COPY web3cache/tests/ web3cache/tests/
+CMD ["target/release/web3cache"]

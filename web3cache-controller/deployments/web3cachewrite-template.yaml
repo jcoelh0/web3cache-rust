@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3cache-write-<contract-id>
+  namespace: web3cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cache-write
+  template:
+    metadata:
+      labels:
+        component: web3cache-write
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: web3cache-write
+          image: ghcr.io/mintstatelabs/web3cache-write:dev
+          imagePullPolicy: Always
+          env:
+            - name: CONTRACTID
+              value: "<contract-id>"
+            - name: SUBSCRIPTIONS_URL
+              value: "http://web3cache-subscriptions-service:443/web3cache/events"
+            - name: DISPATCHER_URL
+              value: "http://web3cache-dispatcher-service:3003/push-transactions"
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: write-secrets
+                  key: MONGOURI
+            - name: RUST_LOG
+              value: "info"
+            - name: RESETDB
+              value: "once"
+            - name: WAIT_SECONDS
+              value: "10"
+            - name: RATE_LIMITER
+              value: "2.5"
+            - name: STORE_METADATA
+              value: "true"
+
+          resources:
+            requests:
+              memory: 150Mi
+              cpu: 40m
+            limits:
+              memory: 400Mi
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "web3cache-write"
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

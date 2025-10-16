@@ -1,0 +1,3 @@
+[workspace]
+members = ["my-workspace-hack","web3cache"]
+resolver = "2"

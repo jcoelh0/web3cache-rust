@@ -1,0 +1,18 @@
+{
+    "PORT": "3000",
+    "iam": "http://localhost:3500",
+    "frontend": "http://localhost/",
+    "demo": "true",
+    "RECEIVERPORT": "3003",
+    "READURL" : "http://localhost:3000/web3cache/read",
+    "DB_CONN_STRING": "mongodb://localhost:27017?replica=rs",
+    "REALTIME_URL": "ws://localhost:4100",
+    "ETHERSCAN_API_KEY": "",
+    "WSS_URLS": {
+        "1": "none"
+    },
+    "HTTPS_URLS": {
+        "1": "none"
+    }
+    
+}

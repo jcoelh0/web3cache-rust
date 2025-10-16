@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: web3cache
+  name: web3cache-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web3cache-controller
+  template:
+    metadata:
+      labels:
+        component: web3cache-controller
+    spec:
+      serviceAccountName: controller
+      containers:
+        - name: web3cache-controller-client
+          image: ghcr.io/orangecomet/web3cache-controller:dev
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "5100"
+            - name: RUST_LOG
+              value: "info"
+            - name: MONGOURI
+              valueFrom:
+                secretKeyRef:
+                  name: controller-secrets
+                  key: MONGOURI
+            - name: READAPIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: controller-secrets
+                  key: READAPIKEY
+          ports:
+            - containerPort: 5100
+              name: https
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 10m
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "web3cache-controller"
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

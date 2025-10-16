@@ -1,0 +1,39 @@
+[
+  {
+    "name": "SUBSCRIPTIONS_URL",
+    "value": "http://web3cache-subscriptions-service:443/web3cache/events"
+  },
+  {
+    "name": "DISPATCHER_URL",
+    "value": "http://web3cache-dispatcher-service:3003/push-transactions"
+  },
+  {
+    "name": "MONGOURI",
+    "valueFrom": {
+      "secretKeyRef": {
+        "name": "write-secrets",
+        "key": "MONGOURI"
+      }
+    }
+  },
+  {
+    "name": "RUST_LOG",
+    "value": "info"
+  },
+  {
+    "name": "RESETDB",
+    "value": "once"
+  },
+  {
+    "name": "WAIT_SECONDS",
+    "value": "10"
+  },
+  {
+    "name": "RATE_LIMITER",
+    "value": "2.5"
+  },
+  {
+    "name": "STORE_METADATA",
+    "value": "true"
+  }
+]
